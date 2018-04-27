@@ -17,10 +17,10 @@ export const NETWORKS = {
     dustThreshold: 546,
   },
   BTC: {
-    messagePrefix: '\x18Bitcoin Coin Signed Message:\n',
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
     bip32: {
       public: 0x0488b21e,
-      private: 0x0488ade4
+      private: 0x0488ade4,
     },
     pubKeyHash: 0x00,
     scriptHash: 0x05,
@@ -28,10 +28,10 @@ export const NETWORKS = {
     dustThreshold: 546,
   },
   BTC_TESTNET: {
-    messagePrefix: '\x18Bitcoin Coin Signed Message:\n',
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
     bip32: {
       public: 0x043587cf,
-      private: 0x04358394
+      private: 0x04358394,
     },
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
@@ -39,7 +39,7 @@ export const NETWORKS = {
     dustThreshold: 546,
   },
   LTC: {
-    messagePrefix: '\x18Litecoin Coin Signed Message:\n',
+    messagePrefix: '\x18Litecoin Signed Message:\n',
     bip32: {
       public: 0x019da462,
       private: 0x019d9cfe,
@@ -50,7 +50,7 @@ export const NETWORKS = {
     dustThreshold: 546,
   },
   LTC_TESTNET: {
-    messagePrefix: '\x18Litecoin Coin Signed Message:\n',
+    messagePrefix: '\x18Litecoin Signed Message:\n',
     bip32: {
       public: 0x0436f6e1,
       private: 0x0436ef7d,
@@ -74,16 +74,12 @@ export default class Wallet {
     var currency_type = parseInt(currency_type);
     switch (currency_type) {
       case CURRENCY_TYPE.BTC:
-        if (APP_MODE == 'PROD') 
-          network = NETWORKS.BTC;
-        else 
-          network = NETWORKS.BTC_TESTNET;
+        if (APP_MODE == 'PROD') network = NETWORKS.BTC;
+        else network = NETWORKS.BTC_TESTNET;
         break;
       case CURRENCY_TYPE.LTC:
-        if (APP_MODE == 'PROD') 
-          network = NETWORKS.LTC;
-        else 
-          network = NETWORKS.LTC_TESTNET;
+        if (APP_MODE == 'PROD') network = NETWORKS.LTC;
+        else network = NETWORKS.LTC_TESTNET;
         break;
       case CURRENCY_TYPE.FLASH:
       default:
@@ -102,24 +98,27 @@ export default class Wallet {
     }
 
     let seed = bip39.mnemonicToSeedHex(mnemonic);
-    let accountZero = bitcoin.HDNode.fromSeedHex(seed, this.getCryptoNetwork(wdata.currency_type)).deriveHardened(
-      0
-    );
+    let accountZero = bitcoin.HDNode.fromSeedHex(
+      seed,
+      this.getCryptoNetwork(wdata.currency_type)
+    ).deriveHardened(0);
 
     this.accounts = {
       externalAccount: accountZero.derive(0),
       internalAccount: accountZero.derive(1),
     };
     this.currency_type = wdata.currency_type;
-    if(return_passphrase)
-      this.pure_passphrase = wdata.pure_passphrase;
+    if (return_passphrase) this.pure_passphrase = wdata.pure_passphrase;
 
     return this;
   }
 
   signTx(rawTx) {
     let tx = bitcoin.Transaction.fromHex(rawTx);
-    let txBuilder = bitcoin.TransactionBuilder.fromTransaction(tx, this.getCryptoNetwork(this.currency_type));
+    let txBuilder = bitcoin.TransactionBuilder.fromTransaction(
+      tx,
+      this.getCryptoNetwork(this.currency_type)
+    );
     let keyPair = this.accounts.externalAccount.derive(0).keyPair;
 
     for (var i = 0; i < tx.ins.length; i++) {
